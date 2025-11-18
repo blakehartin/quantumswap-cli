@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"quantumswap-cli/contracts/core"
+	"quantumswap-cli/contracts/multicall"
 	"strconv"
 	"strings"
 	"time"
@@ -266,6 +267,62 @@ func enableFee(from string, contractAddr string, fee int64, tick int64) error {
 	}
 
 	fmt.Println("Your request to enable fee has been added to the queue for processing. Please check your account after 10 minutes.")
+	fmt.Println("The transaction hash for tracking this request is: ", tx.Hash(), "contractAddress", contractAddress)
+	fmt.Println()
+
+	time.Sleep(1000 * time.Millisecond)
+
+	return nil
+}
+
+func deployMultiCall(from string) error {
+	key, err := GetKey(from)
+	if err != nil {
+		return err
+	}
+
+	client, err := ethclient.Dial(rawURL)
+	if err != nil {
+		return err
+	}
+
+	fromAddress, err := cryptobase.SigAlg.PublicKeyToAddress(&key.PublicKey)
+
+	if err != nil {
+		return err
+	}
+
+	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		return err
+	}
+
+	chainId, err := getChainId()
+	if err != nil {
+		return err
+	}
+	txnOpts, err := bind.NewKeyedTransactorWithChainID(key, big.NewInt(chainId))
+
+	if err != nil {
+		return err
+	}
+
+	txnOpts.From = fromAddress
+	txnOpts.Nonce = big.NewInt(int64(nonce))
+	txnOpts.GasLimit, err = getGasLimit(uint64(500000))
+	if err != nil {
+		return err
+	}
+
+	txnOpts.Value = big.NewInt(0)
+
+	var tx *types.Transaction
+	contractAddress, tx, _, err := multicall.DeployMulticall(txnOpts, client)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Your request to deploy MultiCall contract has been added to the queue for processing. Please check your account after 10 minutes.")
 	fmt.Println("The transaction hash for tracking this request is: ", tx.Hash(), "contractAddress", contractAddress)
 	fmt.Println()
 

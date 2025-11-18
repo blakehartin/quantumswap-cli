@@ -14,6 +14,9 @@ import (
 // 1) git clone https://github.com/quantumswapdex/quantumswap-core.git
 // 2) solc --bin --bin-runtime --abi C:\github\quantumswap\main\quantumswap-core\contracts\UniswapV3Factory.sol  -o C:\github\quantumswap\quantumswap-cli\contracts\core --optimize
 // 3) abigen --bin=C:\github\quantumswap\quantumswap-cli\contracts\core\UniswapV3Factory.bin --abi=C:\github\quantumswap\quantumswap-cli\contracts\core\UniswapV3Factory.abi --pkg=core --out=C:\github\quantumswap\quantumswap-cli\contracts\core\UniswapV3Factory.go
+// 4) git clone https://github.com/quantumswapdex/v3-periphery.git
+// 5) solc --bin --bin-runtime --abi C:\github\quantumswap\main\v3-periphery\contracts\lens\UniswapInterfaceMulticall.sol  -o C:\github\quantumswap\quantumswap-cli\contracts\multicall --optimize
+// 6) abigen --bin=C:\github\quantumswap\quantumswap-cli\contracts\multicall\UniswapInterfaceMulticall.bin --abi=C:\github\quantumswap\quantumswap-cli\contracts\multicall\UniswapInterfaceMulticall.abi --pkg=multicall --out=C:\github\quantumswap\quantumswap-cli\contracts\multicall\UniswapInterfaceMulticall.go
 
 var rawURL string
 
@@ -21,11 +24,17 @@ func printHelp() {
 	fmt.Println("--------")
 	fmt.Println(" Usage")
 	fmt.Println("--------")
+
 	fmt.Println("quantumswap-cli deploycore FROM_ADDRESS")
 	fmt.Println("      Set the following environment variables:")
 	fmt.Println("           DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE")
+
 	fmt.Println("quantumswap-cli enablefee FROM_ADDRESS CONTRACT_ADDRESS FEE TICK_SPACING")
 	fmt.Println("      Use 100 for FEE and 1 for TICK_SPACING")
+	fmt.Println("      Set the following environment variables:")
+	fmt.Println("           DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE")
+
+	fmt.Println("quantumswap-cli deploymulticall FROM_ADDRESS")
 	fmt.Println("      Set the following environment variables:")
 	fmt.Println("           DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE")
 }
@@ -54,6 +63,8 @@ func main() {
 		DeployCore()
 	} else if os.Args[1] == "enablefee" {
 		EnableFee()
+	} else if os.Args[1] == "deploymulticall" {
+		DeployMultiCall()
 	} else {
 		printHelp()
 	}
@@ -131,6 +142,35 @@ func EnableFee() {
 	}
 
 	err = enableFee(from, coreContractAddress, int64(fee), int64(tick))
+	if err != nil {
+		fmt.Println("error", err)
+		return
+	}
+}
+
+func DeployMultiCall() {
+	if len(os.Args) < 3 {
+		printHelp()
+		return
+	}
+
+	from := os.Args[2]
+	if common.IsHexAddress(from) == false {
+		fmt.Println("Invalid address", from)
+		return
+	}
+
+	ethConfirm, err := prompt.Stdin.PromptConfirm(fmt.Sprintf("Do you want to deploy the multicall contract from %s?", from))
+	if err != nil {
+		fmt.Println("error", err)
+		return
+	}
+	if ethConfirm != true {
+		fmt.Println("confirmation not made")
+		return
+	}
+
+	err = deployMultiCall(from)
 	if err != nil {
 		fmt.Println("error", err)
 		return
