@@ -17,6 +17,9 @@ import (
 // 4) git clone https://github.com/quantumswapdex/v3-periphery.git
 // 5) solc --bin --bin-runtime --abi C:\github\quantumswap\main\v3-periphery\contracts\lens\UniswapInterfaceMulticall.sol  -o C:\github\quantumswap\quantumswap-cli\contracts\multicall --optimize
 // 6) abigen --bin=C:\github\quantumswap\quantumswap-cli\contracts\multicall\UniswapInterfaceMulticall.bin --abi=C:\github\quantumswap\quantumswap-cli\contracts\multicall\UniswapInterfaceMulticall.abi --pkg=multicall --out=C:\github\quantumswap\quantumswap-cli\contracts\multicall\UniswapInterfaceMulticall.go
+// 7) git clone https://github.com/quantumcoinproject/openzeppelin-contracts.git
+// 7) solc --bin --bin-runtime --abi C:\github\main\openzeppelin-contracts\contracts\proxy\ProxyAdmin.sol  -o C:\github\quantumswap\quantumswap-cli\contracts\proxyadmin --optimize --allow-paths "*,"
+// 8) abigen --bin=C:\github\quantumswap\quantumswap-cli\contracts\proxyadmin\ProxyAdmin.bin --abi=C:\github\quantumswap\quantumswap-cli\contracts\proxyadmin\ProxyAdmin.abi --pkg=proxyadmin --out=C:\github\quantumswap\quantumswap-cli\contracts\proxyadmin\ProxyAdmin.go
 
 var rawURL string
 
