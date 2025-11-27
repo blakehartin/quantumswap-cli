@@ -1,2 +1,3 @@
 # quantumswap-cli
-QuantumSwap CLI
+CLI Tool for QuantumSwap
+

@@ -1,0 +1,320 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"runtime"
+	"strconv"
+	"strings"
+
+	"github.com/quantumcoinproject/quantum-coin-go/common"
+	"github.com/quantumcoinproject/quantum-coin-go/console/prompt"
+)
+
+var rawURL string
+
+func printHelp() {
+	fmt.Println("--------")
+	fmt.Println(" Usage")
+	fmt.Println("--------")
+
+	fmt.Println("(optional) quantumswap-cli createpool TOKEN_A_ADDRESS TOKEN_B_ADDRESS FEE")
+	fmt.Println("      Set the following environment variables:")
+	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
+	fmt.Println("      Set the following additional environment variables:")
+	fmt.Println("           V3_CORE_FACTORY_CONTRACT_ADDRESS")
+
+	fmt.Println("(optional) quantumswap-cli getpool TOKEN_A_ADDRESS TOKEN_B_ADDRESS FEE")
+	fmt.Println("      Set the following environment variables:")
+	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT")
+	fmt.Println("      Set the following additional environment variables:")
+	fmt.Println("           V3_CORE_FACTORY_CONTRACT_ADDRESS")
+
+	fmt.Println("(optional) quantumswap-cli initializepool POOL_ADDRESS PRICE_IN_TOKEN_B_PER_TOKEN_A TOKEN_A_DECIMALS TOKEN_B_DECIMALS")
+	fmt.Println("      Set the following environment variables:")
+	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
+
+	fmt.Println("(optional) quantumswap-deploy addliquidity TOKEN_A_ADDRESS TOKEN_B_ADDRESS FEE TICK_LOWER TICK_UPPER AMOUNT_A AMOUNT_B AMOUNT_A_MIN AMOUNT_B_MIN")
+	fmt.Println("      Set the following environment variables:")
+	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
+	fmt.Println("      Set the following additional environment variables:")
+	fmt.Println("           NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS")
+
+	fmt.Println("(optional) quantumswap-deploy exactInputSingle TOKEN_IN_ADDRESS TOKEN_OUT_ADDRESS FEE AMOUNT_IN AMOUNT_OUT_MIN")
+	fmt.Println("      Set the following environment variables:")
+	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
+	fmt.Println("      Set the following additional environment variables:")
+	fmt.Println("           SWAP_ROUTER_CONTRACT_ADDRESS")
+
+	fmt.Println("(optional) quantumswap-deploy exactOutputSingle TOKEN_IN_ADDRESS TOKEN_OUT_ADDRESS FEE AMOUNT_OUT AMOUNT_IN_MAX")
+	fmt.Println("      Set the following environment variables:")
+	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
+	fmt.Println("      Set the following additional environment variables:")
+	fmt.Println("           SWAP_ROUTER_CONTRACT_ADDRESS")
+}
+
+func main() {
+	fmt.Println("===================")
+	fmt.Println(" QuantumSwap CLI")
+	fmt.Println("===================")
+
+	if len(os.Args) < 2 {
+		printHelp()
+		return
+	}
+
+	rawURL = os.Getenv("DP_RAW_URL")
+	if len(rawURL) == 0 {
+		runtimeOS := strings.ToLower(runtime.GOOS)
+		if runtimeOS == "windows" {
+			rawURL = "\\\\.\\pipe\\geth.ipc"
+		} else {
+			rawURL = "data/geth.ipc"
+		}
+	}
+
+	if os.Args[1] == "createpool" {
+		CreatePool()
+	} else if os.Args[1] == "getpool" {
+		GetPool()
+	} else if os.Args[1] == "initializepool" {
+		InitializePool()
+	} else if os.Args[1] == "exactInputSingle" {
+		ExactInputSingle()
+	} else if os.Args[1] == "exactOutputSingle" {
+		ExactOutputSingle()
+	} else {
+		printHelp()
+	}
+}
+
+func CreatePool() {
+	if len(os.Args) < 5 {
+		printHelp()
+		return
+	}
+
+	tokenAaddr := os.Args[2]
+	if common.IsHexAddress(tokenAaddr) == false {
+		fmt.Println("Invalid TOKEN_A_ADDRESS", tokenAaddr)
+		return
+	}
+	tokenAaddress := common.HexToAddress(tokenAaddr)
+
+	tokenBaddr := os.Args[3]
+	if common.IsHexAddress(tokenBaddr) == false {
+		fmt.Println("Invalid TOKEN_B_ADDRESS", tokenBaddr)
+		return
+	}
+	tokenBaddress := common.HexToAddress(tokenBaddr)
+
+	feeVal := os.Args[4]
+	fee, err := strconv.ParseUint(feeVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing FEE", err)
+		return
+	}
+
+	v3coreFactoryContractAddr := os.Getenv("V3_CORE_FACTORY_CONTRACT_ADDRESS")
+	if common.IsHexAddress(v3coreFactoryContractAddr) == false {
+		fmt.Println("Invalid V3_CORE_FACTORY_CONTRACT_ADDRESS", v3coreFactoryContractAddr)
+		return
+	}
+	v3CoreFactoryAddress = common.HexToAddress(v3coreFactoryContractAddr)
+
+	fromAddr := os.Getenv("FROM_ADDRESS")
+	if common.IsHexAddress(fromAddr) == false {
+		fmt.Println("Invalid FROM_ADDRESS", fromAddr)
+		return
+	}
+	fromAddress = common.HexToAddress(fromAddr)
+
+	ethConfirm, err := prompt.Stdin.PromptConfirm(fmt.Sprintf("Do you want to CreatePool from %s?", fromAddress))
+	if err != nil {
+		fmt.Println("error", err)
+		return
+	}
+	if ethConfirm != true {
+		fmt.Println("confirmation not made")
+		return
+	}
+
+	_, err = createPool(tokenAaddress, tokenBaddress, int64(fee))
+	if err != nil {
+		fmt.Println("createPool error", err)
+		return
+	}
+}
+
+func GetPool() {
+	if len(os.Args) < 5 {
+		printHelp()
+		return
+	}
+
+	tokenAaddr := os.Args[2]
+	if common.IsHexAddress(tokenAaddr) == false {
+		fmt.Println("Invalid TOKEN_A_ADDRESS", tokenAaddr)
+		return
+	}
+	tokenAaddress := common.HexToAddress(tokenAaddr)
+
+	tokenBaddr := os.Args[3]
+	if common.IsHexAddress(tokenBaddr) == false {
+		fmt.Println("Invalid TOKEN_B_ADDRESS", tokenBaddr)
+		return
+	}
+	tokenBaddress := common.HexToAddress(tokenBaddr)
+
+	feeVal := os.Args[4]
+	fee, err := strconv.ParseUint(feeVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing FEE", err)
+		return
+	}
+
+	v3coreFactoryContractAddr := os.Getenv("V3_CORE_FACTORY_CONTRACT_ADDRESS")
+	if common.IsHexAddress(v3coreFactoryContractAddr) == false {
+		fmt.Println("Invalid V3_CORE_FACTORY_CONTRACT_ADDRESS", v3coreFactoryContractAddr)
+		return
+	}
+	v3CoreFactoryAddress = common.HexToAddress(v3coreFactoryContractAddr)
+
+	_, err = getPool(tokenAaddress, tokenBaddress, int64(fee))
+	if err != nil {
+		fmt.Println("getPool error", err)
+		return
+	}
+}
+
+func InitializePool() {
+	if len(os.Args) < 6 {
+		printHelp()
+		return
+	}
+
+	poolAddr := os.Args[2]
+	if common.IsHexAddress(poolAddr) == false {
+		fmt.Println("Invalid POOL_ADDRESS", poolAddr)
+		return
+	}
+	poolAddress := common.HexToAddress(poolAddr)
+
+	priceVal := os.Args[3]
+	price, err := strconv.ParseUint(priceVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing PRICE_IN_TOKEN_B_PER_TOKEN_A", err)
+		return
+	}
+
+	tokenAdecimalsVal := os.Args[4]
+	tokenAdecimals, err := strconv.ParseUint(tokenAdecimalsVal, 10, 8)
+	if err != nil {
+		fmt.Println("Error parsing TOKEN_A_DECIMALS", err)
+		return
+	}
+	if tokenAdecimals > 18 {
+		fmt.Println("Invalid TOKEN_A_DECIMALS", err)
+		return
+	}
+
+	tokenBdecimalsVal := os.Args[5]
+	tokenBdecimals, err := strconv.ParseUint(tokenBdecimalsVal, 10, 8)
+	if err != nil {
+		fmt.Println("Error parsing TOKEN_B_DECIMALS", err)
+		return
+	}
+	if tokenBdecimals > 18 {
+		fmt.Println("Invalid TOKEN_A_DECIMALS", err)
+		return
+	}
+
+	fromAddr := os.Getenv("FROM_ADDRESS")
+	if common.IsHexAddress(fromAddr) == false {
+		fmt.Println("Invalid FROM_ADDRESS", fromAddr)
+		return
+	}
+	fromAddress = common.HexToAddress(fromAddr)
+
+	ethConfirm, err := prompt.Stdin.PromptConfirm(fmt.Sprintf("Do you want to CreatePool from %s?", fromAddress))
+	if err != nil {
+		fmt.Println("error", err)
+		return
+	}
+	if ethConfirm != true {
+		fmt.Println("confirmation not made")
+		return
+	}
+
+	_, err = initializePool(poolAddress, int64(price), uint8(tokenAdecimals), uint8(tokenBdecimals))
+	if err != nil {
+		fmt.Println("initializePool error", err)
+		return
+	}
+}
+
+func AddLiquidity() {
+	if len(os.Args) < 10 {
+		printHelp()
+		return
+	}
+
+	tokenAaddr := os.Args[2]
+	if common.IsHexAddress(tokenAaddr) == false {
+		fmt.Println("Invalid TOKEN_A_ADDRESS", tokenAaddr)
+		return
+	}
+	tokenAaddress := common.HexToAddress(tokenAaddr)
+
+	tokenBaddr := os.Args[3]
+	if common.IsHexAddress(tokenBaddr) == false {
+		fmt.Println("Invalid TOKEN_B_ADDRESS", tokenBaddr)
+		return
+	}
+	tokenBaddress := common.HexToAddress(tokenBaddr)
+
+	feeVal := os.Args[4]
+	fee, err := strconv.ParseUint(feeVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing FEE", err)
+		return
+	}
+
+	v3coreFactoryContractAddr := os.Getenv("V3_CORE_FACTORY_CONTRACT_ADDRESS")
+	if common.IsHexAddress(v3coreFactoryContractAddr) == false {
+		fmt.Println("Invalid V3_CORE_FACTORY_CONTRACT_ADDRESS", v3coreFactoryContractAddr)
+		return
+	}
+	v3CoreFactoryAddress = common.HexToAddress(v3coreFactoryContractAddr)
+
+	fromAddr := os.Getenv("FROM_ADDRESS")
+	if common.IsHexAddress(fromAddr) == false {
+		fmt.Println("Invalid FROM_ADDRESS", fromAddr)
+		return
+	}
+	fromAddress = common.HexToAddress(fromAddr)
+
+	ethConfirm, err := prompt.Stdin.PromptConfirm(fmt.Sprintf("Do you want to CreatePool from %s?", fromAddress))
+	if err != nil {
+		fmt.Println("error", err)
+		return
+	}
+	if ethConfirm != true {
+		fmt.Println("confirmation not made")
+		return
+	}
+
+	_, err = createPool(tokenAaddress, tokenBaddress, int64(fee))
+	if err != nil {
+		fmt.Println("createPool error", err)
+		return
+	}
+}
+
+func ExactInputSingle() {
+
+}
+
+func ExactOutputSingle() {
+
+}
