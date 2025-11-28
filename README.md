@@ -1,5 +1,5 @@
 # quantumswap-cli
-CLI Tool for QuantumSwap
+CLI Tool for QuantumSwap. QuantumSwap is a DEX that runs on QuantumCoin (Q) blockchain.
 
 ## Prerequisites
 
@@ -16,6 +16,20 @@ Additionally, the `FEE` value used when creating the liquidity pool should be id
 
 ### Option B) Swapping with option of constant output tokens and maximum input spend
 ```quantumswap-cli getpool TOKEN_A_ADDRESS TOKEN_B_ADDRESS FEE```
+
+## How to create Tokens, Check Balance, transfer etc.?
+
+### Creating a new Token
+```dputil createtoken FROM_ADDRESS TOKEN_NAME TOKEN_SYMBOL TOTAL_SUPPLY```
+
+### Checking Token Balance
+```dputil tokenbalance CONTRACT_ADDRESS ACCOUNT_ADDRESS```
+
+### Transferring Tokens
+```dputil transfertokens CONTRACT_ADDRESS FROM_ADDRESS TO_ADDRESS amount```
+
+### Renouncing Token Ownership
+```dputil renouncetokenownership CONTRACT_ADDRESS FROM_ADDRESS```
 
 ## How to create a Liquidity Pool and add Liquidity?
 
