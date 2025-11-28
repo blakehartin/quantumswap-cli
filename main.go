@@ -413,9 +413,145 @@ func AddLiquidity() {
 }
 
 func ExactInputSingle() {
+	if len(os.Args) < 7 {
+		printHelp()
+		return
+	}
 
+	tokenInaddr := os.Args[2]
+	if common.IsHexAddress(tokenInaddr) == false {
+		fmt.Println("Invalid TOKEN_IN_ADDRESS", tokenInaddr)
+		return
+	}
+	tokenInAddress := common.HexToAddress(tokenInaddr)
+
+	tokenOutaddr := os.Args[3]
+	if common.IsHexAddress(tokenOutaddr) == false {
+		fmt.Println("Invalid TOKEN_OUT_ADDRESS", tokenOutaddr)
+		return
+	}
+	tokenOutAddress := common.HexToAddress(tokenOutaddr)
+
+	feeVal := os.Args[4]
+	fee, err := strconv.ParseUint(feeVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing FEE", err)
+		return
+	}
+
+	amountInVal := os.Args[5]
+	amountIn, err := strconv.ParseUint(amountInVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing AMOUNT_IN", err)
+		return
+	}
+
+	amountOutMinVal := os.Args[6]
+	amountOutMin, err := strconv.ParseUint(amountOutMinVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing AMOUNT_OUT_MIN", err)
+		return
+	}
+
+	v3SwapRouterContractAddr := os.Getenv("SWAP_ROUTER_CONTRACT_ADDRESS")
+	if common.IsHexAddress(v3SwapRouterContractAddr) == false {
+		fmt.Println("Invalid SWAP_ROUTER_CONTRACT_ADDRESS", v3SwapRouterContractAddr)
+		return
+	}
+	v3SwapRouterContractAddress = common.HexToAddress(v3SwapRouterContractAddr)
+
+	fromAddr := os.Getenv("FROM_ADDRESS")
+	if common.IsHexAddress(fromAddr) == false {
+		fmt.Println("Invalid FROM_ADDRESS", fromAddr)
+		return
+	}
+	fromAddress = common.HexToAddress(fromAddr)
+
+	ethConfirm, err := prompt.Stdin.PromptConfirm(fmt.Sprintf("Do you want to SwapExactSingle from %s?", fromAddress))
+	if err != nil {
+		fmt.Println("error", err)
+		return
+	}
+	if ethConfirm != true {
+		fmt.Println("confirmation not made")
+		return
+	}
+
+	_, err = swapExactSingle(tokenInAddress, tokenOutAddress, int64(fee), int64(amountIn), int64(amountOutMin))
+	if err != nil {
+		fmt.Println("swapExactSingle error", err)
+		return
+	}
 }
 
 func ExactOutputSingle() {
+	if len(os.Args) < 7 {
+		printHelp()
+		return
+	}
 
+	tokenInaddr := os.Args[2]
+	if common.IsHexAddress(tokenInaddr) == false {
+		fmt.Println("Invalid TOKEN_IN_ADDRESS", tokenInaddr)
+		return
+	}
+	tokenInAddress := common.HexToAddress(tokenInaddr)
+
+	tokenOutaddr := os.Args[3]
+	if common.IsHexAddress(tokenOutaddr) == false {
+		fmt.Println("Invalid TOKEN_OUT_ADDRESS", tokenOutaddr)
+		return
+	}
+	tokenOutAddress := common.HexToAddress(tokenOutaddr)
+
+	feeVal := os.Args[4]
+	fee, err := strconv.ParseUint(feeVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing FEE", err)
+		return
+	}
+
+	amountOutVal := os.Args[5]
+	amountOut, err := strconv.ParseUint(amountOutVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing AMOUNT_OUT", err)
+		return
+	}
+
+	amountInMaxVal := os.Args[6]
+	amountInMax, err := strconv.ParseUint(amountInMaxVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing AMOUNT_IN_MAX", err)
+		return
+	}
+
+	v3SwapRouterContractAddr := os.Getenv("SWAP_ROUTER_CONTRACT_ADDRESS")
+	if common.IsHexAddress(v3SwapRouterContractAddr) == false {
+		fmt.Println("Invalid SWAP_ROUTER_CONTRACT_ADDRESS", v3SwapRouterContractAddr)
+		return
+	}
+	v3SwapRouterContractAddress = common.HexToAddress(v3SwapRouterContractAddr)
+
+	fromAddr := os.Getenv("FROM_ADDRESS")
+	if common.IsHexAddress(fromAddr) == false {
+		fmt.Println("Invalid FROM_ADDRESS", fromAddr)
+		return
+	}
+	fromAddress = common.HexToAddress(fromAddr)
+
+	ethConfirm, err := prompt.Stdin.PromptConfirm(fmt.Sprintf("Do you want to SwapExactSingle from %s?", fromAddress))
+	if err != nil {
+		fmt.Println("error", err)
+		return
+	}
+	if ethConfirm != true {
+		fmt.Println("confirmation not made")
+		return
+	}
+
+	_, err = swapExactOutputSingle(tokenInAddress, tokenOutAddress, int64(fee), int64(amountOut), int64(amountInMax))
+	if err != nil {
+		fmt.Println("swapExactSingle error", err)
+		return
+	}
 }

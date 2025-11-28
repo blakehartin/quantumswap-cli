@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"quantumswap-cli/contracts/core"
 	"quantumswap-cli/contracts/nonfungiblepositionmanager"
+	"quantumswap-cli/contracts/swaprouter"
 	"quantumswap-cli/contracts/v3pool"
 	"strconv"
 	"strings"
@@ -540,6 +541,145 @@ func addLiquidity(tokenAaddress common.Address, tokenBaddress common.Address, fe
 	}
 
 	fmt.Println("Your request to add liquidity (mint) has been added to the queue for processing. Please check your account after 10 minutes.")
+	fmt.Println("The transaction hash for tracking this request is: ", tx.Hash())
+	fmt.Println()
+
+	time.Sleep(1000 * time.Millisecond)
+
+	return tx, nil
+}
+
+func swapExactSingle(tokenInAddress common.Address, tokenOutAddress common.Address, fee int64, amountIn int64, amountOutMinimum int64) (*types.Transaction, error) {
+	key, err := GetKey(fromAddress.Hex())
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := ethclient.Dial(rawURL)
+	if err != nil {
+		return nil, err
+	}
+
+	fromAddress, err = cryptobase.SigAlg.PublicKeyToAddress(&key.PublicKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	chainId, err := getChainId()
+	if err != nil {
+		return nil, err
+	}
+	txnOpts, err := bind.NewKeyedTransactorWithChainID(key, big.NewInt(chainId))
+
+	if err != nil {
+		return nil, err
+	}
+
+	txnOpts.From = fromAddress
+	txnOpts.Nonce = big.NewInt(int64(nonce))
+	txnOpts.GasLimit, err = getGasLimit(uint64(6000000))
+	if err != nil {
+		return nil, err
+	}
+
+	txnOpts.Value = big.NewInt(0)
+
+	var swapParams swaprouter.IV3SwapRouterExactInputSingleParams
+	swapParams.TokenIn = tokenInAddress
+	swapParams.TokenOut = tokenOutAddress
+	swapParams.Fee = big.NewInt(fee)
+	swapParams.Recipient = fromAddress //todo: check if correct
+	swapParams.AmountIn = big.NewInt(amountIn)
+	swapParams.AmountOutMinimum = big.NewInt(amountOutMinimum)
+	swapParams.SqrtPriceLimitX96 = big.NewInt(0)
+
+	contract, err := swaprouter.NewSwaprouter(v3SwapRouterContractAddress, client)
+	if err != nil {
+		return nil, err
+	}
+
+	var tx *types.Transaction
+	tx, err = contract.ExactInputSingle(txnOpts, swapParams)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Your request to swapExactSingle has been added to the queue for processing. Please check your account after 10 minutes.")
+	fmt.Println("The transaction hash for tracking this request is: ", tx.Hash())
+	fmt.Println()
+
+	time.Sleep(1000 * time.Millisecond)
+
+	return tx, nil
+}
+
+func swapExactOutputSingle(tokenInAddress common.Address, tokenOutAddress common.Address, fee int64, amountOut int64, amountInMaximum int64) (*types.Transaction, error) {
+	key, err := GetKey(fromAddress.Hex())
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := ethclient.Dial(rawURL)
+	if err != nil {
+		return nil, err
+	}
+
+	fromAddress, err = cryptobase.SigAlg.PublicKeyToAddress(&key.PublicKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	chainId, err := getChainId()
+	if err != nil {
+		return nil, err
+	}
+	txnOpts, err := bind.NewKeyedTransactorWithChainID(key, big.NewInt(chainId))
+
+	if err != nil {
+		return nil, err
+	}
+
+	txnOpts.From = fromAddress
+	txnOpts.Nonce = big.NewInt(int64(nonce))
+	txnOpts.GasLimit, err = getGasLimit(uint64(6000000))
+	if err != nil {
+		return nil, err
+	}
+
+	txnOpts.Value = big.NewInt(0)
+
+	var swapParams swaprouter.IV3SwapRouterExactOutputSingleParams
+	swapParams.TokenIn = tokenInAddress
+	swapParams.TokenOut = tokenOutAddress
+	swapParams.Fee = big.NewInt(fee)
+	swapParams.Recipient = fromAddress //todo: check if correct
+	swapParams.AmountOut = big.NewInt(amountOut)
+	swapParams.AmountInMaximum = big.NewInt(amountInMaximum)
+
+	contract, err := swaprouter.NewSwaprouter(v3SwapRouterContractAddress, client)
+	if err != nil {
+		return nil, err
+	}
+
+	var tx *types.Transaction
+	tx, err = contract.ExactOutputSingle(txnOpts, swapParams)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Your request to swapExactOutputSingle has been added to the queue for processing. Please check your account after 10 minutes.")
 	fmt.Println("The transaction hash for tracking this request is: ", tx.Hash())
 	fmt.Println()
 

@@ -1,3 +1,64 @@
 # quantumswap-cli
 CLI Tool for QuantumSwap
 
+## Prerequisites
+
+Set following environment variables:
+
+1) FROM_ADDRESS
+
+## How to Swap Tokens 
+Additionally, the `FEE` value used when creating the liquidity pool should be identified.
+
+
+### Option A) Swapping with option of constant input tokens and minimum output tokens needed
+```quantumswap-cli createpool TOKEN_A_ADDRESS TOKEN_B_ADDRESS FEE```
+
+### Option B) Swapping with option of constant output tokens and maximum input spend
+```quantumswap-cli getpool TOKEN_A_ADDRESS TOKEN_B_ADDRESS FEE```
+
+## How to create a Liquidity Pool and add Liquidity?
+
+### Prerequisites
+Set the following environment variables:
+
+1) V3_CORE_FACTORY_CONTRACT_ADDRESS
+2) NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS
+3) SWAP_ROUTER_CONTRACT_ADDRESS
+4) FROM_ADDRESS
+
+### 1) Create a Liquidity Pool
+
+```quantumswap-cli createpool TOKEN_A_ADDRESS TOKEN_B_ADDRESS FEE```
+
+`FEE` : a fee tier (0.05%, 0.3%, or 1%)
+
+### 2) Get the Pool Address
+```quantumswap-cli getpool TOKEN_A_ADDRESS TOKEN_B_ADDRESS FEE```
+
+`FEE` : a fee tier (0.05%, 0.3%, or 1%)
+
+### 2) Initialize the Pool
+
+```quantumswap-cli initializepool POOL_ADDRESS PRICE_IN_TOKEN_B_PER_TOKEN_A TOKEN_A_DECIMALS TOKEN_B_DECIMALS```
+
+`TOKEN_A_DECIMALS` and `TOKEN_B_DECIMALS` should be between, 0 to 18
+
+### 3) Approve TokenA
+```quantumswap-cli approve TOKEN_ADDRESS APPROVAL_ADDRESS AMOUNT```
+
+`TOKEN_ADDRESS`: Pass the `TOKEN_A_ADDRESS` 
+`AMOUNT` You may give maximum or specific amount
+
+### 4) Approve TokenB
+```quantumswap-cli approve TOKEN_ADDRESS APPROVAL_ADDRESS AMOUNT```
+
+`TOKEN_ADDRESS`: Pass the `TOKEN_A_ADDRESS`
+`AMOUNT` You may give maximum or specific amount
+
+### 5) Add Liquidity
+```quantumswap-deploy addliquidity TOKEN_A_ADDRESS TOKEN_B_ADDRESS FEE TICK_LOWER TICK_UPPER AMOUNT_A AMOUNT_B AMOUNT_A_MIN AMOUNT_B_MIN```
+
+`FEE` : a fee tier (0.05%, 0.3%, or 1%)
+
+
