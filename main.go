@@ -34,6 +34,10 @@ func printHelp() {
 	fmt.Println("      Set the following environment variables:")
 	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
 
+	fmt.Println("(optional) quantumswap-cli approve TOKEN_ADDRESS APPROVAL_ADDRESS AMOUNT")
+	fmt.Println("      Set the following environment variables:")
+	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
+
 	fmt.Println("(optional) quantumswap-deploy addliquidity TOKEN_A_ADDRESS TOKEN_B_ADDRESS FEE TICK_LOWER TICK_UPPER AMOUNT_A AMOUNT_B AMOUNT_A_MIN AMOUNT_B_MIN")
 	fmt.Println("      Set the following environment variables:")
 	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
@@ -79,6 +83,10 @@ func main() {
 		GetPool()
 	} else if os.Args[1] == "initializepool" {
 		InitializePool()
+	} else if os.Args[1] == "approve" {
+		Approve()
+	} else if os.Args[1] == "addliquidity" {
+		AddLiquidity()
 	} else if os.Args[1] == "exactInputSingle" {
 		ExactInputSingle()
 	} else if os.Args[1] == "exactOutputSingle" {
@@ -253,8 +261,59 @@ func InitializePool() {
 	}
 }
 
+func Approve() {
+	if len(os.Args) < 5 {
+		printHelp()
+		return
+	}
+
+	tokenAddr := os.Args[2]
+	if common.IsHexAddress(tokenAddr) == false {
+		fmt.Println("Invalid TOKEN_ADDRESS", tokenAddr)
+		return
+	}
+	tokenAddress := common.HexToAddress(tokenAddr)
+
+	approveAddr := os.Args[3]
+	if common.IsHexAddress(approveAddr) == false {
+		fmt.Println("Invalid APPROVAL_ADDRESS", approveAddr)
+		return
+	}
+	approveAddress := common.HexToAddress(tokenAddr)
+
+	amountVal := os.Args[4]
+	amount, err := strconv.ParseUint(amountVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing AMOUNT", err)
+		return
+	}
+
+	fromAddr := os.Getenv("FROM_ADDRESS")
+	if common.IsHexAddress(fromAddr) == false {
+		fmt.Println("Invalid FROM_ADDRESS", fromAddr)
+		return
+	}
+	fromAddress = common.HexToAddress(fromAddr)
+
+	ethConfirm, err := prompt.Stdin.PromptConfirm(fmt.Sprintf("Do you want to Approve from %s?", fromAddress))
+	if err != nil {
+		fmt.Println("error", err)
+		return
+	}
+	if ethConfirm != true {
+		fmt.Println("confirmation not made")
+		return
+	}
+
+	_, err = approve(tokenAddress, approveAddress, int64(amount))
+	if err != nil {
+		fmt.Println("approve error", err)
+		return
+	}
+}
+
 func AddLiquidity() {
-	if len(os.Args) < 10 {
+	if len(os.Args) < 11 {
 		printHelp()
 		return
 	}
@@ -280,12 +339,54 @@ func AddLiquidity() {
 		return
 	}
 
-	v3coreFactoryContractAddr := os.Getenv("V3_CORE_FACTORY_CONTRACT_ADDRESS")
-	if common.IsHexAddress(v3coreFactoryContractAddr) == false {
-		fmt.Println("Invalid V3_CORE_FACTORY_CONTRACT_ADDRESS", v3coreFactoryContractAddr)
+	tickLowerVal := os.Args[5]
+	tickLower, err := strconv.ParseUint(tickLowerVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing TICK_LOWER", err)
 		return
 	}
-	v3CoreFactoryAddress = common.HexToAddress(v3coreFactoryContractAddr)
+
+	tickUpperVal := os.Args[6]
+	tickUpper, err := strconv.ParseUint(tickUpperVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing TICK_UPPER", err)
+		return
+	}
+
+	amountAval := os.Args[7]
+	amountA, err := strconv.ParseUint(amountAval, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing AMOUNT_A", err)
+		return
+	}
+
+	amountBval := os.Args[8]
+	amountB, err := strconv.ParseUint(amountBval, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing AMOUNT_B", err)
+		return
+	}
+
+	amountAminval := os.Args[9]
+	amountAmin, err := strconv.ParseUint(amountAminval, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing AMOUNT_A_MIN", err)
+		return
+	}
+
+	amountBminval := os.Args[10]
+	amountBmin, err := strconv.ParseUint(amountBminval, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing AMOUNT_B_MIN", err)
+		return
+	}
+
+	nfPositionManagerAddr := os.Getenv("NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS")
+	if common.IsHexAddress(nfPositionManagerAddr) == false {
+		fmt.Println("Invalid NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS", nfPositionManagerAddr)
+		return
+	}
+	nonFungiblePositionManagerAddress = common.HexToAddress(nfPositionManagerAddr)
 
 	fromAddr := os.Getenv("FROM_ADDRESS")
 	if common.IsHexAddress(fromAddr) == false {
@@ -304,9 +405,9 @@ func AddLiquidity() {
 		return
 	}
 
-	_, err = createPool(tokenAaddress, tokenBaddress, int64(fee))
+	_, err = addLiquidity(tokenAaddress, tokenBaddress, int64(fee), int64(tickLower), int64(tickUpper), int64(amountA), int64(amountB), int64(amountAmin), int64(amountBmin))
 	if err != nil {
-		fmt.Println("createPool error", err)
+		fmt.Println("addLiquidity error", err)
 		return
 	}
 }
