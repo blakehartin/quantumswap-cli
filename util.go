@@ -28,7 +28,6 @@ import (
 	"github.com/quantumcoinproject/quantum-coin-go/crypto/signaturealgorithm"
 	"github.com/quantumcoinproject/quantum-coin-go/ethclient"
 	"github.com/quantumcoinproject/quantum-coin-go/params"
-	"github.com/quantumcoinproject/quantum-coin-go/token"
 )
 
 const (
@@ -478,73 +477,15 @@ func initializePool(poolAddress common.Address, price int64, tokenAdecimals uint
 	return tx, nil
 }
 
-func approve(tokenAddress common.Address, approveAddress common.Address, amount int64) (*types.Transaction, error) {
-	key, err := GetKey(fromAddress.Hex())
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := ethclient.Dial(rawURL)
-	if err != nil {
-		return nil, err
-	}
-
-	fromAddress, err = cryptobase.SigAlg.PublicKeyToAddress(&key.PublicKey)
-
-	if err != nil {
-		return nil, err
-	}
-
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	chainId, err := getChainId()
-	if err != nil {
-		return nil, err
-	}
-	txnOpts, err := bind.NewKeyedTransactorWithChainID(key, big.NewInt(chainId))
-
-	if err != nil {
-		return nil, err
-	}
-
-	txnOpts.From = fromAddress
-	txnOpts.Nonce = big.NewInt(int64(nonce))
-	txnOpts.GasLimit, err = getGasLimit(uint64(6000000))
-	if err != nil {
-		return nil, err
-	}
-
-	txnOpts.Value = big.NewInt(0)
-
-	contract, err := token.NewToken(tokenAddress, client)
-	if err != nil {
-		return nil, err
-	}
-
-	var tx *types.Transaction
-	tx, err = contract.Approve(txnOpts, approveAddress, params.EtherToWei(big.NewInt(amount)))
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Println("Your request to approve spend has been added to the queue for processing. Please check your account after 10 minutes.")
-	fmt.Println("The transaction hash for tracking this request is: ", tx.Hash())
-	fmt.Println()
-
-	time.Sleep(1000 * time.Millisecond)
-
-	return tx, nil
-}
-
 func addLiquidity(tokenAaddress common.Address, tokenBaddress common.Address, fee int64, tickLower int64, tickUpper int64,
 	amountA int64, amountB int64, amountAmin int64, amountBmin int64) (*types.Transaction, error) {
 	key, err := GetKey(fromAddress.Hex())
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println("addLiquidity", "nonFungiblePositionManagerAddress", nonFungiblePositionManagerAddress, "tokenAaddress", tokenAaddress, "tokenBaddress", tokenBaddress, "fee", fee,
+		"tickLower", tickLower, "tickUpper", tickUpper, "amountA", amountA, "amountB", amountB, "amountAmin", amountAmin, "amountBmin", amountBmin)
 
 	client, err := ethclient.Dial(rawURL)
 	if err != nil {
@@ -586,20 +527,23 @@ func addLiquidity(tokenAaddress common.Address, tokenBaddress common.Address, fe
 	mintParams.TickLower = big.NewInt(tickLower)
 	mintParams.TickUpper = big.NewInt(tickUpper)
 	mintParams.Recipient = fromAddress //todo: correct check?
-	mintParams.Deadline = big.NewInt(999999999999999999)
+	//mintParams.Recipient = nonFungiblePositionManagerAddress //todo: correct check?
+	mintParams.Deadline = big.NewInt(9999999999)
 
 	if bytes.Compare(tokenAaddress.Bytes(), tokenBaddress.Bytes()) < 0 {
+		fmt.Println("option A")
 		mintParams.Token0 = tokenAaddress
 		mintParams.Token1 = tokenBaddress
-		mintParams.Amount0Desired = params.EtherToWei(big.NewInt(amountA))
-		mintParams.Amount1Desired = params.EtherToWei(big.NewInt(amountB))
+		mintParams.Amount0Desired = big.NewInt(amountA)
+		mintParams.Amount1Desired = big.NewInt(amountB)
 		mintParams.Amount0Min = params.EtherToWei(big.NewInt(amountAmin))
 		mintParams.Amount1Min = params.EtherToWei(big.NewInt(amountBmin))
 	} else {
+		fmt.Println("option B")
 		mintParams.Token0 = tokenBaddress
 		mintParams.Token1 = tokenAaddress
-		mintParams.Amount0Desired = params.EtherToWei(big.NewInt(amountB))
-		mintParams.Amount1Desired = params.EtherToWei(big.NewInt(amountA))
+		mintParams.Amount0Desired = big.NewInt(amountB)
+		mintParams.Amount1Desired = big.NewInt(amountA)
 		mintParams.Amount0Min = params.EtherToWei(big.NewInt(amountBmin))
 		mintParams.Amount1Min = params.EtherToWei(big.NewInt(amountAmin))
 	}

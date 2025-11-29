@@ -36,10 +36,6 @@ func printHelp() {
 	fmt.Println("      Set the following environment variables:")
 	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
 
-	fmt.Println("(optional) quantumswap-cli approve TOKEN_ADDRESS APPROVAL_ADDRESS AMOUNT")
-	fmt.Println("      Set the following environment variables:")
-	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
-
 	fmt.Println("(optional) quantumswap-deploy addliquidity TOKEN_A_ADDRESS TOKEN_B_ADDRESS FEE TICK_LOWER TICK_UPPER AMOUNT_A AMOUNT_B AMOUNT_A_MIN AMOUNT_B_MIN")
 	fmt.Println(" !!!LIMITATION!!! Amount will be converted to WETH based on 18 decimals internally. Other decimals not supported.")
 	fmt.Println(" FEE should be 500 or 3000 or 10000 (For 0.3, 0.05%, 0.3%, or 1%)")
@@ -93,8 +89,6 @@ func main() {
 		GetPool()
 	} else if os.Args[1] == "initializepool" {
 		InitializePool()
-	} else if os.Args[1] == "approve" {
-		Approve()
 	} else if os.Args[1] == "addliquidity" {
 		AddLiquidity()
 	} else if os.Args[1] == "exactinputsingle" {
@@ -279,57 +273,6 @@ func InitializePool() {
 	_, err = initializePool(poolAddress, int64(price), uint8(tokenAdecimals), uint8(tokenBdecimals))
 	if err != nil {
 		fmt.Println("initializePool error", err)
-		return
-	}
-}
-
-func Approve() {
-	if len(os.Args) < 5 {
-		printHelp()
-		return
-	}
-
-	tokenAddr := os.Args[2]
-	if common.IsHexAddress(tokenAddr) == false {
-		fmt.Println("Invalid TOKEN_ADDRESS", tokenAddr)
-		return
-	}
-	tokenAddress := common.HexToAddress(tokenAddr)
-
-	approveAddr := os.Args[3]
-	if common.IsHexAddress(approveAddr) == false {
-		fmt.Println("Invalid APPROVAL_ADDRESS", approveAddr)
-		return
-	}
-	approveAddress := common.HexToAddress(tokenAddr)
-
-	amountVal := os.Args[4]
-	amount, err := strconv.ParseUint(amountVal, 10, 64)
-	if err != nil {
-		fmt.Println("Error parsing AMOUNT", err)
-		return
-	}
-
-	fromAddr := os.Getenv("FROM_ADDRESS")
-	if common.IsHexAddress(fromAddr) == false {
-		fmt.Println("Invalid FROM_ADDRESS", fromAddr)
-		return
-	}
-	fromAddress = common.HexToAddress(fromAddr)
-
-	ethConfirm, err := prompt.Stdin.PromptConfirm(fmt.Sprintf("Do you want to Approve from %s?", fromAddress))
-	if err != nil {
-		fmt.Println("error", err)
-		return
-	}
-	if ethConfirm != true {
-		fmt.Println("confirmation not made")
-		return
-	}
-
-	_, err = approve(tokenAddress, approveAddress, int64(amount))
-	if err != nil {
-		fmt.Println("approve error", err)
 		return
 	}
 }
