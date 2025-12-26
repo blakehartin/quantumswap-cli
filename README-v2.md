@@ -32,6 +32,7 @@ Run the following two commands and note down the contract address. If your goal 
 Set the environment variables to the contract addresses from above step. 
 
 `set TOKEN_A_ADDRESS=0x7B385c8525D707c8444a95674d467B830e8a3041c5d6458d0CF8E1c4FfefdEfB`
+
 `set TOKEN_B_ADDRESS=0xCeF0799Ccd42A95AaC1f6b9db30F89255F7b116d429Ef27021f31cBB8B01B143`
 
 #### Check token balance
@@ -50,6 +51,7 @@ Note down the pair address by running the following command.
 `quantumswap-cli getpair %TOKEN_A_ADDRESS% %TOKEN_B_ADDRESS%`
 
 Set the PAIR_ADDRESS environment variable to the output value from above command.
+
 `set PAIR_ADDRESS=0x68e8Ac81Dd2Ef3F7dCF5c40ff9A9a4ff09484e064C07b7fdfD78839697f59074`
 
 ### Add Liquidity
