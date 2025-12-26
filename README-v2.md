@@ -78,8 +78,11 @@ After giving approval, validate the approval has been given. The output values s
 First set example token ratio environment variables. Adjust values as desired. Below is example for 1:1.
 
 `set AMOUNT_A=10000`
+
 `set AMOUNT_B=10000`
+
 `set AMOUNT_A_MIN=1`
+
 `set AMOUNT_B_MIN=1`
 
 Add the liquidity.
