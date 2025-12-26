@@ -103,7 +103,7 @@ Check whether liquidity has been added, by checking balance in `PAIR_ADDRESS` an
 
 First, send token to `TOKEN_SWAPPER_ADDRESS` from the `TOKEN_CREATOR_ADDRESS` (or any address that has the tokens), to demonstrate swapping of tokens.
 
-`dputil transfertokens %TOKEN_A_ADDRESS% %TOKEN_CREATOR_ADDRESS% %TOKEN_SWAPPER_ADDRESS%`
+`dputil transfertokens %TOKEN_A_ADDRESS% %TOKEN_CREATOR_ADDRESS% %TOKEN_SWAPPER_ADDRESS% 10000`
 
 Check balance of the swapper.
 `dputil tokenbalance %TOKEN_A_ADDRESS% %TOKEN_SWAPPER_ADDRESS%`
