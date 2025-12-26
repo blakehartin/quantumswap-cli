@@ -86,6 +86,7 @@ First set example token ratio environment variables. Adjust values as desired. B
 `set AMOUNT_B_MIN=1`
 
 Add the liquidity.
+
 `quantumswap-cli addliquidityv2 %TOKEN_A_ADDRESS% %TOKEN_B_ADDRESS% %AMOUNT_A% %AMOUNT_B% %AMOUNT_A_MIN% %AMOUNT_B_MIN%`
 
 Check whether liquidity has been added, by checking balance in `PAIR_ADDRESS` and whether the token balance has decreased from `token creator`
