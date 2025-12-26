@@ -7,7 +7,7 @@ Set following environment variables:
 
 1) `DP_RAW_URL`, `DP_KEY_FILE`
 2) Create two addresses with enough Q for gas, one for the `token creator` and one for the `token swapper`. 
-3) For each subsequent command below, set the `DP_KEY_FILE`, `DP_KEY_FILE_DIR`, `FROM_ADDRESS` to the corresponding values based on whether `token creator` or `token swapper` is used.
+3) For each subsequent command below, set the `DP_KEY_FILE`, `DP_KEY_FILE_DIR`, `DP_ACC_PWD`, `FROM_ADDRESS` to the corresponding values based on whether `token creator` or `token swapper` is used.
 4) `WQ_CONTRACT_ADDRESS` (Wrapped Q)
 5) `V2_CORE_FACTORY_CONTRACT_ADDRESS`
 6) `SWAP_ROUTER_V2_CONTRACT_ADDRESS`
