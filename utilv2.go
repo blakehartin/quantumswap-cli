@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"quantumswap-cli/contracts/corev2"
+	"quantumswap-cli/contracts/pairv2"
 	"quantumswap-cli/contracts/v2swaprouter"
 	"time"
 
@@ -99,6 +100,111 @@ func getPair(tokenAaddress common.Address, tokenBaddress common.Address) (*commo
 	time.Sleep(1000 * time.Millisecond)
 
 	return &pairAddress, nil
+}
+
+func getReserves(tokenAaddress common.Address, tokenBaddress common.Address) (*struct {
+	Reserve0           *big.Int
+	Reserve1           *big.Int
+	BlockTimestampLast uint32
+}, error) {
+	fmt.Println("getReserves", "v2SwapRouterContractAddress", v2SwapRouterContractAddress, "tokenAaddress", tokenAaddress, "tokenBaddress", tokenBaddress)
+
+	client, err := ethclient.Dial(rawURL)
+	if err != nil {
+		return nil, err
+	}
+
+	pairAddress, err := getPair(tokenAaddress, tokenBaddress)
+	if err != nil {
+		return nil, err
+	}
+
+	contract, err := pairv2.NewPairv2(*pairAddress, client)
+	if err != nil {
+		return nil, err
+	}
+
+	reserves, err := contract.GetReserves(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Reserves", "tokenAaddress", tokenAaddress, "token A reserve", reserves.Reserve0, "tokenBaddress", tokenBaddress, "token B reserve", reserves.Reserve1)
+	fmt.Println()
+
+	time.Sleep(1000 * time.Millisecond)
+
+	return &reserves, nil
+}
+
+func getAmountIn(tokenInaddress common.Address, tokenOutaddress common.Address, amountOut int64) (*big.Int, error) {
+	weiAmountOut := params.EtherToWei(big.NewInt(amountOut))
+	fmt.Println("getAmountIn", "v2SwapRouterContractAddress", v2SwapRouterContractAddress, "tokenInaddress", tokenInaddress, "tokenOutaddress", tokenOutaddress,
+		"amountOut (coins)", amountOut, "amountOut (wei)", amountOut)
+
+	reserves, err := getReserves(tokenInaddress, tokenOutaddress)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := ethclient.Dial(rawURL)
+	if err != nil {
+		return nil, err
+	}
+
+	contract, err := v2swaprouter.NewV2swaprouter(v2SwapRouterContractAddress, client)
+	if err != nil {
+		return nil, err
+	}
+
+	weiAmountIn, err := contract.GetAmountIn(nil, weiAmountOut, reserves.Reserve0, reserves.Reserve1)
+	if err != nil {
+		return nil, err
+	}
+	amountIn := params.WeiToEther(weiAmountIn)
+
+	fmt.Println("getAmountIn", "tokenInaddress", tokenInaddress, "tokenOutaddress", tokenOutaddress,
+		"amountIn (coins)", amountIn, "amountIn (wei)", weiAmountIn, "amountOut (coins)", amountOut, "amountOut (wei)", weiAmountOut)
+	fmt.Println()
+
+	time.Sleep(1000 * time.Millisecond)
+
+	return amountIn, nil
+}
+
+func getAmountOut(tokenInaddress common.Address, tokenOutaddress common.Address, amountIn int64) (*big.Int, error) {
+	weiAmountIn := params.EtherToWei(big.NewInt(amountIn))
+	fmt.Println("getAmountIn", "v2SwapRouterContractAddress", v2SwapRouterContractAddress, "tokenInaddress", tokenInaddress, "tokenOutaddress", tokenOutaddress,
+		"amountIn (coins)", amountIn, "amountIn (wei)", weiAmountIn)
+
+	reserves, err := getReserves(tokenInaddress, tokenOutaddress)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := ethclient.Dial(rawURL)
+	if err != nil {
+		return nil, err
+	}
+
+	contract, err := v2swaprouter.NewV2swaprouter(v2SwapRouterContractAddress, client)
+	if err != nil {
+		return nil, err
+	}
+
+	amountOutWei, err := contract.GetAmountOut(nil, weiAmountIn, reserves.Reserve0, reserves.Reserve1)
+	if err != nil {
+		return nil, err
+	}
+	amountOut := params.WeiToEther(amountOutWei)
+
+	fmt.Println("getAmountOut", "tokenInaddress", tokenInaddress, "tokenOutaddress", tokenOutaddress,
+		"amountIn (coins)", amountIn, "amountIn (wei)", weiAmountIn, "amountOut (coins)", amountOut, "amountOut (wei)", amountOutWei)
+	fmt.Println()
+
+	time.Sleep(1000 * time.Millisecond)
+
+	return amountOut, nil
 }
 
 func addLiquidityV2(tokenAaddress common.Address, tokenBaddress common.Address,
