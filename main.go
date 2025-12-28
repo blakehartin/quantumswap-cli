@@ -37,6 +37,20 @@ func printHelp() {
 	fmt.Println("      Set the following additional environment variables:")
 	fmt.Println("            SWAP_ROUTER_V2_CONTRACT_ADDRESS")
 
+	fmt.Println("(optional) quantumswap-deploy getamountin TOKEN_IN_ADDRESS TOKEN_OUT_ADDRESS AMOUNT_OUT")
+	fmt.Println(" !!!LIMITATION!!! Amount will be converted to wei based on 18 decimals internally. Other decimals not supported.")
+	fmt.Println("      Set the following environment variables:")
+	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
+	fmt.Println("      Set the following additional environment variables:")
+	fmt.Println("            SWAP_ROUTER_V2_CONTRACT_ADDRESS, V2_CORE_FACTORY_CONTRACT_ADDRESS")
+
+	fmt.Println("(optional) quantumswap-deploy getamountout TOKEN_IN_ADDRESS TOKEN_OUT_ADDRESS AMOUNT_IN")
+	fmt.Println(" !!!LIMITATION!!! Amount will be converted to wei based on 18 decimals internally. Other decimals not supported.")
+	fmt.Println("      Set the following environment variables:")
+	fmt.Println("           CHAIN_ID, DP_RAW_URL, DP_KEY_FILE_DIR or DP_KEY_FILE,GAS_LIMIT,FROM_ADDRESS")
+	fmt.Println("      Set the following additional environment variables:")
+	fmt.Println("            SWAP_ROUTER_V2_CONTRACT_ADDRESS, V2_CORE_FACTORY_CONTRACT_ADDRESS")
+
 	fmt.Println("(optional) quantumswap-deploy swapexacttokensFortokens TOKEN_IN_ADDRESS TOKEN_OUT_ADDRESS AMOUNT_IN AMOUNT_OUT_MIN")
 	fmt.Println(" FEE should be 500 or 3000 or 10000 (For 0.3, 0.05%, 0.3%, or 1%)")
 	fmt.Println("      Set the following environment variables:")
@@ -115,6 +129,10 @@ func main() {
 		GetPair()
 	} else if os.Args[1] == "addliquidityv2" {
 		AddLiquidityV2()
+	} else if os.Args[1] == "getamountin" {
+		GetAmountIn()
+	} else if os.Args[1] == "getamountout" {
+		GetAmountOut()
 	} else if os.Args[1] == "swapexacttokensFortokens" {
 		SwapExactTokensForTokens()
 	} else if os.Args[1] == "createpool" {
@@ -273,7 +291,7 @@ func AddLiquidityV2() {
 
 	v2SwapRouterContractAddr := os.Getenv("SWAP_ROUTER_V2_CONTRACT_ADDRESS")
 	if common.IsHexAddress(v2SwapRouterContractAddr) == false {
-		fmt.Println("Invalid  SWAP_ROUTER_V2_CONTRACT_ADDRESS", v2SwapRouterContractAddr)
+		fmt.Println("Invalid SWAP_ROUTER_V2_CONTRACT_ADDRESS", v2SwapRouterContractAddr)
 		return
 	}
 	v2SwapRouterContractAddress = common.HexToAddress(v2SwapRouterContractAddr)
@@ -301,6 +319,102 @@ func AddLiquidityV2() {
 	_, err = addLiquidityV2(tokenAaddress, tokenBaddress, int64(amountA), int64(amountB), int64(amountAmin), int64(amountBmin))
 	if err != nil {
 		fmt.Println("addLiquidityV2 error", err)
+		return
+	}
+}
+
+func GetAmountIn() {
+	if len(os.Args) < 5 {
+		printHelp()
+		return
+	}
+
+	tokenInaddr := os.Args[2]
+	if common.IsHexAddress(tokenInaddr) == false {
+		fmt.Println("Invalid TOKEN_A_ADDRESS", tokenInaddr)
+		return
+	}
+	tokenInaddress := common.HexToAddress(tokenInaddr)
+
+	tokenOutAddr := os.Args[3]
+	if common.IsHexAddress(tokenOutAddr) == false {
+		fmt.Println("Invalid TOKEN_B_ADDRESS", tokenOutAddr)
+		return
+	}
+	tokenOutaddress := common.HexToAddress(tokenOutAddr)
+
+	amountOutVal := os.Args[4]
+	amountOut, err := strconv.ParseUint(amountOutVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing amount out", err)
+		return
+	}
+
+	v2SwapRouterContractAddr := os.Getenv("SWAP_ROUTER_V2_CONTRACT_ADDRESS")
+	if common.IsHexAddress(v2SwapRouterContractAddr) == false {
+		fmt.Println("Invalid SWAP_ROUTER_V2_CONTRACT_ADDRESS", v2SwapRouterContractAddr)
+		return
+	}
+	v2SwapRouterContractAddress = common.HexToAddress(v2SwapRouterContractAddr)
+
+	v2coreFactoryContractAddr := os.Getenv("V2_CORE_FACTORY_CONTRACT_ADDRESS")
+	if common.IsHexAddress(v2coreFactoryContractAddr) == false {
+		fmt.Println("Invalid V2_CORE_FACTORY_CONTRACT_ADDRESS", v2coreFactoryContractAddr)
+		return
+	}
+	v2CoreFactoryAddress = common.HexToAddress(v2coreFactoryContractAddr)
+
+	_, err = getAmountIn(tokenInaddress, tokenOutaddress, int64(amountOut))
+	if err != nil {
+		fmt.Println("GetAmountIn error", err)
+		return
+	}
+}
+
+func GetAmountOut() {
+	if len(os.Args) < 5 {
+		printHelp()
+		return
+	}
+
+	tokenInaddr := os.Args[2]
+	if common.IsHexAddress(tokenInaddr) == false {
+		fmt.Println("Invalid TOKEN_IN_ADDRESS", tokenInaddr)
+		return
+	}
+	tokenInaddress := common.HexToAddress(tokenInaddr)
+
+	tokenOutAddr := os.Args[3]
+	if common.IsHexAddress(tokenOutAddr) == false {
+		fmt.Println("Invalid TOKEN_OUT_ADDRESS", tokenOutAddr)
+		return
+	}
+	tokenOutaddress := common.HexToAddress(tokenOutAddr)
+
+	amountInVal := os.Args[4]
+	amountIn, err := strconv.ParseUint(amountInVal, 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing amount in", err)
+		return
+	}
+
+	v2SwapRouterContractAddr := os.Getenv("SWAP_ROUTER_V2_CONTRACT_ADDRESS")
+	if common.IsHexAddress(v2SwapRouterContractAddr) == false {
+		fmt.Println("Invalid SWAP_ROUTER_V2_CONTRACT_ADDRESS", v2SwapRouterContractAddr)
+		return
+	}
+	v2SwapRouterContractAddress = common.HexToAddress(v2SwapRouterContractAddr)
+
+	v2coreFactoryContractAddr := os.Getenv("V2_CORE_FACTORY_CONTRACT_ADDRESS")
+	if common.IsHexAddress(v2coreFactoryContractAddr) == false {
+		fmt.Println("Invalid V2_CORE_FACTORY_CONTRACT_ADDRESS", v2coreFactoryContractAddr)
+		return
+	}
+	v2CoreFactoryAddress = common.HexToAddress(v2coreFactoryContractAddr)
+
+	_, err = getAmountOut(tokenInaddress, tokenOutaddress, int64(amountIn))
+	if err != nil {
+		fmt.Println("getAmountOut error", err)
 		return
 	}
 }
@@ -341,7 +455,7 @@ func SwapExactTokensForTokens() {
 
 	v2SwapRouterContractAddr := os.Getenv("SWAP_ROUTER_V2_CONTRACT_ADDRESS")
 	if common.IsHexAddress(v2SwapRouterContractAddr) == false {
-		fmt.Println("Invalid  SWAP_ROUTER_V2_CONTRACT_ADDRESS", v2SwapRouterContractAddr)
+		fmt.Println("Invalid SWAP_ROUTER_V2_CONTRACT_ADDRESS", v2SwapRouterContractAddr)
 		return
 	}
 	v2SwapRouterContractAddress = common.HexToAddress(v2SwapRouterContractAddr)

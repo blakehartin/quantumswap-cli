@@ -94,7 +94,6 @@ func getPair(tokenAaddress common.Address, tokenBaddress common.Address) (*commo
 		return nil, err
 	}
 
-	fmt.Println("v2 pairAddress", pairAddress)
 	fmt.Println()
 
 	time.Sleep(1000 * time.Millisecond)
@@ -164,7 +163,9 @@ func getAmountIn(tokenInaddress common.Address, tokenOutaddress common.Address, 
 	amountIn := params.WeiToEther(weiAmountIn)
 
 	fmt.Println("getAmountIn", "tokenInaddress", tokenInaddress, "tokenOutaddress", tokenOutaddress,
-		"amountIn (coins)", amountIn, "amountIn (wei)", weiAmountIn, "amountOut (coins)", amountOut, "amountOut (wei)", weiAmountOut)
+		"amountIn (coins)", amountIn, "amountIn (wei)", weiAmountIn, "amountOut (coins)", amountOut, "amountOut (wei)", weiAmountOut,
+		"reserves In (wei)", reserves.Reserve0, "reserves In (coins)", params.WeiToEther(reserves.Reserve0),
+		"reserves Out (wei)", reserves.Reserve1, "reserves Out (coins)", params.WeiToEther(reserves.Reserve1))
 	fmt.Println()
 
 	time.Sleep(1000 * time.Millisecond)
@@ -174,7 +175,7 @@ func getAmountIn(tokenInaddress common.Address, tokenOutaddress common.Address, 
 
 func getAmountOut(tokenInaddress common.Address, tokenOutaddress common.Address, amountIn int64) (*big.Int, error) {
 	weiAmountIn := params.EtherToWei(big.NewInt(amountIn))
-	fmt.Println("getAmountIn", "v2SwapRouterContractAddress", v2SwapRouterContractAddress, "tokenInaddress", tokenInaddress, "tokenOutaddress", tokenOutaddress,
+	fmt.Println("getAmountOut", "v2SwapRouterContractAddress", v2SwapRouterContractAddress, "tokenInaddress", tokenInaddress, "tokenOutaddress", tokenOutaddress,
 		"amountIn (coins)", amountIn, "amountIn (wei)", weiAmountIn)
 
 	reserves, err := getReserves(tokenInaddress, tokenOutaddress)
@@ -199,7 +200,9 @@ func getAmountOut(tokenInaddress common.Address, tokenOutaddress common.Address,
 	amountOut := params.WeiToEther(amountOutWei)
 
 	fmt.Println("getAmountOut", "tokenInaddress", tokenInaddress, "tokenOutaddress", tokenOutaddress,
-		"amountIn (coins)", amountIn, "amountIn (wei)", weiAmountIn, "amountOut (coins)", amountOut, "amountOut (wei)", amountOutWei)
+		"amountIn (coins)", amountIn, "amountIn (wei)", weiAmountIn, "amountOut (coins)", amountOut, "amountOut (wei)", amountOutWei,
+		"reserves In (wei)", reserves.Reserve0, "reserves In (coins)", params.WeiToEther(reserves.Reserve0),
+		"reserves Out (wei)", reserves.Reserve1, "reserves Out (coins)", params.WeiToEther(reserves.Reserve1))
 	fmt.Println()
 
 	time.Sleep(1000 * time.Millisecond)
