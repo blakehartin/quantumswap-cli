@@ -1,6 +1,14 @@
 # quantumswap-cli
 CLI Tool for QuantumSwap. QuantumSwap is a DEX that runs on QuantumCoin (Q) blockchain. You also need `dputil` CLI tool from https://github.com/quantumcoinproject/quantum-coin-go/releases
 
+## Well Known Contract Addresses
+
+### Test release (Dec 2025)
+
+`WQ_CONTRACT_ADDRESS=0x0E49c26cd1ca19bF8ddA2C8985B96783288458754757F4C9E00a5439A7291628`
+`V2_CORE_FACTORY_CONTRACT_ADDRESS=0xbbF45a1B60044669793B444eD01Eb33e03Bb8cf3c5b6ae7887B218D05C5Cbf1d`
+`SWAP_ROUTER_V2_CONTRACT_ADDRESS=0x41323EF72662185f44a03ea0ad8094a0C9e925aB1102679D8e957e838054aac5`
+
 ## Prerequisites
 
 Set following environment variables:
@@ -25,15 +33,15 @@ Run the following two commands and note down the contract address. If your goal 
 
 `dputil createtoken %FROM_ADDRESS% "Quantum Shiba" "qshib" 1000000000`
 
-`dputil createtoken %FROM_ADDRESS% "Doge Protocol" "dogep" 1000000000`
+`dputil createtoken %FROM_ADDRESS% "Quantum Floki" "qflo" 1000000000`
 
 #### Set token environment variables
 
 Set the environment variables to the contract addresses from above step. 
 
-`set TOKEN_A_ADDRESS=0x7B385c8525D707c8444a95674d467B830e8a3041c5d6458d0CF8E1c4FfefdEfB`
+`set TOKEN_A_ADDRESS=0x1Bd75060B22686a9f32Af80BC02348c1BAeDBba06f47ad723885c92a6566B65d`
 
-`set TOKEN_B_ADDRESS=0xCeF0799Ccd42A95AaC1f6b9db30F89255F7b116d429Ef27021f31cBB8B01B143`
+`set TOKEN_B_ADDRESS=0x12b803EC8529b26deEa8D7ff37B9457Ea15C05bD3fD0Ba2F3A4b95D53c82403a`
 
 #### Check token balance
 
@@ -53,7 +61,7 @@ Note down the pair address by running the following command.
 
 Set the PAIR_ADDRESS environment variable to the output value from above command.
 
-`set PAIR_ADDRESS=0x68e8Ac81Dd2Ef3F7dCF5c40ff9A9a4ff09484e064C07b7fdfD78839697f59074`
+`set PAIR_ADDRESS=0x912b15FFD30bB47E190E452f7A4728Ea014e4f89306277BEF1451AAF441BCA16`
 
 ### Add Liquidity
 
@@ -98,6 +106,10 @@ Check whether liquidity has been added, by checking balance in `PAIR_ADDRESS` an
 `dputil tokenbalance %TOKEN_A_ADDRESS% %FROM_ADDRESS%`
 
 `dputil tokenbalance %TOKEN_B_ADDRESS% %FROM_ADDRESS%`
+
+Check the liquidity pair token balance:
+
+`dputil tokenbalance %PAIR_ADDRESS% %FROM_ADDRESS%`
 
 ### Demonstration of Swapping
 

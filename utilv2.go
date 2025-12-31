@@ -94,6 +94,7 @@ func getPair(tokenAaddress common.Address, tokenBaddress common.Address) (*commo
 		return nil, err
 	}
 
+	fmt.Println("getPair", "tokenAaddress", tokenAaddress, "tokenBaddress", tokenBaddress, "pairAddress", pairAddress)
 	fmt.Println()
 
 	time.Sleep(1000 * time.Millisecond)
