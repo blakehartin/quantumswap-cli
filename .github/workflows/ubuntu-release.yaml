@@ -1,0 +1,48 @@
+name: Ubuntu Release
+
+on:
+  push:
+    tags:
+    - '*'    
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: true
+
+      matrix:
+        os: [ubuntu-22.04]
+        build_type: [Release]
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v4
+      with:
+       go-version: '1.25.3'
+        
+    - name: Build
+      run: |
+         mkdir ${{ github.workspace }}/build && go build -o ${{ github.workspace }}/build ./...
+
+    - name: Create Release
+      
+      run: |
+         mkdir ${{ github.workspace }}/build/release && find ${{ github.workspace }}/build -maxdepth 1 -type f -exec cp {} ${{ github.workspace }}/build/release \;
+         cd ${{ github.workspace }}/build/release && tar -czf ${{ github.workspace }}/build/quantumswapcli-ubuntu-${{  github.ref_name }}.tar.gz .
+         sha256sum ${{ github.workspace }}/build/quantumswapcli-ubuntu-${{  github.ref_name }}.tar.gz >${{ github.workspace }}/build/releasehash-quantumswapcli-ubuntu-${{  github.ref_name }}.txt    
+         
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        name: qc-release-ubuntu
+        path: |
+              ${{ github.workspace }}/build/*.*
+              
+    - name: release
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        artifacts: "build/*.gz,build/*.txt"
